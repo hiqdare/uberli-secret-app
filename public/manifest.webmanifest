@@ -1,0 +1,21 @@
+{
+  "name": "uberli.ch",
+  "short_name": "uberli",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E4BBEF",
+  "theme_color": "#6E2E87",
+  "description": "Tool für sicheres teilen von Informationen",
+  "icons": [
+    {
+      "src": "/favicon_uberli_purple_256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon_uberli_purple_512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
