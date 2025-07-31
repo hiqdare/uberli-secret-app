@@ -1,10 +1,14 @@
 {
   "name": "uberli-secret-frontend",
-  "private": true,
   "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.14.0"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
+    "postinstall": "npm run build",
     "start": "serve -s dist",
     "preview": "vite preview"
   },
@@ -12,19 +16,19 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.2.0",
-    "@mui/material": "^7.1.2",
+    "@mui/material": "^7.2.0",
     "crypto-js": "^4.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router-dom": "^7.7.0"
+    "react-router-dom": "^7.7.0",
+    "serve": "^14.2.4"
   },
   "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
-    "@types/crypto-js": "^4.2.2",
-    "@vitejs/plugin-react": "^4.6.0",
+    "@vitejs/plugin-react": "^4.7.0",
     "typescript": "~5.8.3",
-    "vite": "^7.0.4",
-    "serve": "^14.2.4"
+    "vite": "^7.0.4"
   }
 }
