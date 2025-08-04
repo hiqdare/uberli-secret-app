@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams} from "react-router-dom";
 import {
   Box,
@@ -6,10 +6,14 @@ import {
   TextField,
   Typography,
   Alert,
-  useMediaQuery
+  useMediaQuery,
+  Stack,
+  Tooltip,
+  IconButton
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import GitHubIcon from "@mui/icons-material/GitHub";
+import IosShareIcon from "@mui/icons-material/IosShare";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CryptoJS from "crypto-js";
 import { storeSecret, readSecret } from '../api';
@@ -19,6 +23,8 @@ import SecretModal from "./SecretModal";
 
 export default function SecretPage() {
   const MAX_SECRET_LENGTH = 1000;
+  const BRAND = "#6E2E87";
+  const BRAND_HOVER = "#5A246D";
   const [secret, setSecret] = useState("");
   const [link, setLink] = useState("");
   const [error, setError] = useState("");
@@ -28,7 +34,39 @@ export default function SecretPage() {
   const [secretData, setSecretData] = useState<string | null>(null);
   const [fetchError, setFetchError] = useState(false);
 
-  console.log("isMobile", isMobile, window.innerWidth);
+  const [copied, setCopied] = useState(false);
+  const supportsShare = typeof navigator !== "undefined" && "share" in navigator;
+
+  const displayLink = useMemo(
+    () => (link ? (isMobile ? shorten(link, 24, 10) : link) : ""),
+    [link, isMobile]
+  );
+
+  function shorten(url: string, head = 36, tail = 10) {
+    return url.length <= head + tail + 1 ? url : `${url.slice(0, head)}…${url.slice(-tail)}`;
+  }
+
+  async function onCopy() {
+    if (!link) return;
+    await navigator.clipboard.writeText(link);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function onShare() {
+    if (!link) return;
+    try {
+      if (supportsShare) {
+        await navigator.share({
+          title: "Einmal-Link",
+          text: "Öffne den Link, um das Geheimnis einmalig zu sehen.",
+          url: link
+        });
+      } else {
+        await onCopy();
+      }
+    } catch {}
+  }
 
   const handleSubmit = async () => {
     setError("");
@@ -129,7 +167,7 @@ export default function SecretPage() {
           sx={{
             mb: 4,
             fontFamily: "'Comfortaa', sans-serif",
-            color: "#6E2E87",
+            color: BRAND,
             textAlign: "center"
           }}
         >
@@ -158,11 +196,11 @@ export default function SecretPage() {
               variant="contained"
               onClick={handleSubmit}
               sx={{
-                bgcolor: "#6E2E87",
+                bgcolor: BRAND,
                 color: "white",          // <- Textfarbe explizit setzen
                 mb: 2,
                 ":hover": {
-                  bgcolor: "#5A246D"     // optional dunklerer Hover
+                  bgcolor: BRAND_HOVER     // optional dunklerer Hover
                 }
               }}
             >
@@ -179,36 +217,77 @@ export default function SecretPage() {
                 justifyContent: "center",
                 alignItems: "center",
                 px: 2,
-                py: 1.5
+                py: 1.5,
+                // ⬅️ die Message-Box (Inhalt des Alerts) bekommt volle Breite
+                '& .MuiAlert-message': { width: '100%', p: 0, m: 0 }
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography
-                  variant="body2"
-                  sx={{ fontFamily: "'Comfortaa', sans-serif", color: "#3c763d" }}
+              <Stack
+                direction={isMobile ? "column" : "row"}
+                spacing={1}
+                alignItems="stretch"
+                sx={{ width: '100%' }}
+              >
+                <Tooltip title={link}>
+                  <TextField
+                    value={displayLink}
+                    size="small"
+                    fullWidth
+                    multiline={!isMobile}
+                    maxRows={2}
+                    inputProps={{ readOnly: true }}
+                    sx={{
+                      flex: 1,
+                      minWidth: 0,
+                      '& .MuiInputBase-input': isMobile
+                        ? {
+                            textOverflow: 'ellipsis',
+                            overflow: 'hidden',
+                            whiteSpace: 'nowrap'
+                          }
+                        : {
+                            whiteSpace: 'normal',
+                            wordBreak: 'break-all',
+                            overflowWrap: 'anywhere'
+                          }
+                    }}
+                  />
+                </Tooltip>
+
+                <Stack
+                  direction="row"
+                  spacing={0.5}
+                  justifyContent="center"
+                  sx={{ flexShrink: 0 }}
                 >
-                  Link:{" "}
-                  <a
-                    href={link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "#3c763d", textDecoration: "underline" }}
-                  >
-                    {link}
-                  </a>
-                </Typography>
-                <ContentCopyIcon
-                  fontSize="small"
-                  onClick={() => navigator.clipboard.writeText(link)}
-                  sx={{
-                    cursor: "pointer",
-                    color: "#3c763d",
-                    "&:hover": { color: "#2a572a" }
-                  }}
-                />
-              </Box>
+                  <Tooltip title={copied ? "Kopiert!" : "Kopieren"}>
+                    <IconButton
+                      onClick={onCopy}
+                      size="small"
+                      aria-label="Link kopieren"
+                      sx={{ color: BRAND, '&:hover': { color: BRAND_HOVER } }}
+                    >
+                      <ContentCopyIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+
+                  <Tooltip title={supportsShare ? "Teilen" : "Teilen nicht unterstützt"}>
+                    <IconButton
+                      onClick={onShare}
+                      size="small"
+                      disabled={!supportsShare}
+                      aria-label="Link teilen"
+                      sx={{ color: BRAND, '&:hover': { color: BRAND_HOVER } }}
+                    >
+                      <IosShareIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+              </Stack>
             </Alert>
           )}
+
+
 
           {error && <Alert severity="error">{error}</Alert>}
         </Box>
@@ -230,7 +309,7 @@ export default function SecretPage() {
               variant="body2"
               sx={{
                 fontFamily: "'Comfortaa', sans-serif",
-                color: "#6E2E87",
+                color: BRAND,
                 mr: 1
               }}
             >
@@ -257,7 +336,7 @@ export default function SecretPage() {
             style={{
               display: "flex",
               alignItems: "center",
-              color: "#6E2E87",
+              color: BRAND,
               fontFamily: "'Comfortaa', sans-serif",
               textDecoration: "none",
               fontSize: "0.9rem"
