@@ -12,6 +12,7 @@ import { useTheme } from "@mui/material/styles";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CryptoJS from "crypto-js";
+import { storeSecret, readSecret } from '../api';
 import SecretModal from "./SecretModal";
 
 
@@ -49,17 +50,10 @@ export default function SecretPage() {
     const encrypted = CryptoJS.AES.encrypt(secret, key).toString();
 
     try {
-      const response = await fetch("/api/secret", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ value: encrypted })
-      });
+      const { id } = await storeSecret(encrypted);
 
-      const data = await response.json();
-      if (data.id) {
-        const url = `${window.location.origin}/${data.id}#${key}`;
+      if (id) {
+        const url = `${window.location.origin}/${id}#${key}`;
         setLink(url);
         setSecret("");
       } else {
@@ -78,25 +72,20 @@ export default function SecretPage() {
       setFetchError(true);
       return;
     }
-    console.log("Calling API");
-    fetch(`/api/secret/${id}`)
-      .then((res) => {
-        console.log("Call succeeded");
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then((data) => {
-        try {
-          console.log("decrypting");
-          const decrypted = CryptoJS.AES.decrypt(data.value, hash).toString(CryptoJS.enc.Utf8);
-          if (!decrypted) throw new Error("Decryption failed");
-          setSecretData(decrypted);
-        } catch (err) {
-          console.error("Decryption failed", err);
-          setFetchError(true);
-        }
-      })
-      .catch(() => setFetchError(true));
+    (async () => {
+      if (!id) return;
+      const key = window.location.hash.slice(1);
+      if (!key) { setFetchError(true); return; }
+
+      try {
+        const { value } = await readSecret(id);
+        const decrypted = CryptoJS.AES.decrypt(value, key).toString(CryptoJS.enc.Utf8);
+        if (!decrypted) throw new Error('Decryption failed');
+        setSecretData(decrypted);
+      } catch {
+        setFetchError(true);
+      }
+    })();
   }, [id]);
 
   function generateKey(length = 32) {
