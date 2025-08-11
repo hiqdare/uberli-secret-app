@@ -1,6 +1,6 @@
 // src/api.ts
 const API_BASE =
-  import.meta.env.VITE_API_ORIGIN ?? 'https://api.secret.uberli.ch';
+  import.meta.env.VITE_API_ORIGIN ?? 'https://api.uberli.ch';
 
 export async function storeSecret(encrypted: string) {
   const res = await fetch(`${API_BASE}/api/secret`, {

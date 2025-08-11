@@ -197,10 +197,10 @@ export default function SecretPage() {
               onClick={handleSubmit}
               sx={{
                 bgcolor: BRAND,
-                color: "white",          // <- Textfarbe explizit setzen
+                color: "white",
                 mb: 2,
                 ":hover": {
-                  bgcolor: BRAND_HOVER     // optional dunklerer Hover
+                  bgcolor: BRAND_HOVER
                 }
               }}
             >
