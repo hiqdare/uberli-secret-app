@@ -9,5 +9,22 @@
       "/manifest.webmanifest",
       "/robots.txt"
     ]
-  }
+  },
+  "routes": [
+    {
+      "route": "/docs",
+      "redirect": "https://api.uberli.ch/docs",
+      "statusCode": 302
+    },
+    {
+      "route": "/openapi.json",
+      "redirect": "https://api.uberli.ch/openapi.json",
+      "statusCode": 302
+    },
+    {
+      "route": "/openapi.yaml",
+      "redirect": "https://api.uberli.ch/openapi.yaml",
+      "statusCode": 302
+    }
+  ]
 }

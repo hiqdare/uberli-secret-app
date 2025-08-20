@@ -59,7 +59,7 @@ export default function SecretModal({ open, secretData, fetchError }: SecretModa
 
         {fetchError ? (
           <Alert severity="error">
-            Dieses Geheimnis wurde bereits abgerufen oder ist nicht mehr gültig.
+            Für diesen Schlüssel wurde kein Geheimnis gefunden.
           </Alert>
         ) : secretData ? (
           <>
